@@ -81,6 +81,9 @@ Vue.component('item-view', {
     	if(screen && screen.availWidth) {
 	  		this.maxSize = Math.max(screen.availWidth, screen.availHeight);
     	}
+    	if(this.maxSize > 0 && this.maxSize <= 1024) {
+    		this.url = 'https://illumere.com/images/render/' + this.itm.name + '?h=1024';
+    	}
 	},
 
 	template: `
