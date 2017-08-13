@@ -24,7 +24,7 @@
 			width:100%; 
 			height:100%; 
 			object-fit:contain; 
-			filter: drop-shadow(0px 0px 1px rgba(0,0,0,.3)) drop-shadow(0px 0px 10px rgba(0,0,0,.3));
+			filter: drop-shadow(0px 0px 2px rgba(255,255,255,.5)) drop-shadow(0px 0px 10px rgba(0,0,0,.3));
 		}
 		.title { 
 			position: absolute; 
@@ -35,7 +35,7 @@
 			text-align:center; 
 			font-family: 'Cinzel', sans-serif; 
 			color:white; 
-			filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3))		
+			filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
 		}
 		#fp-nav ul li a span {
 			color: white;
@@ -68,13 +68,15 @@ Vue.component('item-view', {
 	props: ['itm'],
 	data: function() {
 		return {
-			url: 'https://illumere.com/images/image/' + this.itm.name
+			url: 'https://illumere.com/images/image/' + this.itm.name,
+			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=64',
+			bgr: 'background-image:url(https://illumere.com/images/render/' + this.itm.name + '?h=64); background-size: cover;'
 		}
 	},
 
 	template: `
 	<div class="page">
-		<img class="piece" src="" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
+		<img class="piece" :src="thm" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
 		<div class="title">{{itm.title}}</div>
 	</div>
 	`
@@ -90,7 +92,7 @@ new Vue({
 
     created: function () {
       console.log('ready');
-      fetch('https://illumere.com/items/search?tags=top&short=false')
+      fetch('https://illumere.com/items/search')
       .then( resp =>resp.json() )
       .then( it=> {
           this.items = it;
