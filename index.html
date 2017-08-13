@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.css" />
+	<link href="https://fonts.googleapis.com/css?family=Cinzel" rel="stylesheet">
+
+	<style type="text/css">
+		.page {
+			background: #485563;  /* fallback for old browsers */
+			background: -webkit-linear-gradient(to left, #29323c, #485563);  /* Chrome 10-25, Safari 5.1-6 */
+			background: linear-gradient(to left, #29323c, #485563); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+			position:absolute; 
+			top:0; 
+			bottom:0; 
+			left:0; 
+			right:0; 
+			padding: 10px; 
+			padding-bottom: 40px;
+		}
+		.piece { /* THE image */
+			width:100%; 
+			height:100%; 
+			object-fit:contain; 
+			filter: drop-shadow(0px 0px 1px rgba(0,0,0,.3)) drop-shadow(0px 0px 10px rgba(0,0,0,.3));
+		}
+		.title { 
+			position: absolute; 
+			left: 0; 
+			bottom: 0; 
+			width:100%; 
+			font-size: 150%; 
+			text-align:center; 
+			font-family: 'Cinzel', sans-serif; 
+			color:white; 
+			filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3))		
+		}
+
+	</style>
+
+</head>
+<body>
+
+<div id="app">
+	<div id="fullpage">
+    	<div v-for="itm in items" :key="itm.name" class="section" > 
+    		<item-view :itm="itm"> </item-view>
+    	</div>
+	</div>
+</div>
+
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.min.js"></script>
+
+
+<script>
+
+Vue.component('item-view', {	
+	props: ['itm'],
+	data: function() {
+		return {
+			url: 'https://illumere.com/images/image/' + this.itm.name
+		}
+	},
+
+	template: `
+	<div class="page">
+		<img class="piece" :src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
+		<div class="title">{{itm.title}}</div>
+	</div>
+	`
+});
+
+
+new Vue({
+    el: '#app',
+    data: {
+        items: [],
+        count: 0
+    },
+
+    created: function () {
+      console.log('ready');
+      fetch('https://illumere.com/items/search?tags=top&short=false')
+      .then( resp =>resp.json() )
+      .then( it=> {
+          this.items = it;
+          this.count = it.length;
+        }
+      );    
+    },
+
+    updated: function() {
+		$('#fullpage').fullpage({
+		      css3: true,
+		      scrollingSpeed: 800,
+		      anchors: this.items.map(i=>i.name)
+		});    	
+    }
+})
+
+
+</script>
+
+</body>
+</html>
