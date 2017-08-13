@@ -72,8 +72,7 @@ Vue.component('item-view', {
 		return {
 			maxSize: 0,
 			url: 'https://illumere.com/images/image/' + this.itm.name,
-			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=48',
-			bgr: 'background-image:url(https://illumere.com/images/render/' + this.itm.name + '?h=64); background-size: cover;'
+			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=48'
 		}
 	},
 
@@ -89,7 +88,7 @@ Vue.component('item-view', {
 	template: `
 	<div class="page">
 		<img class="piece" :src="thm" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
-		<div class="title">{{itm.title}} ({{ maxSize }})</div>
+		<div class="title">{{itm.title}}</div>
 	</div>
 	`
 });
@@ -103,10 +102,6 @@ new Vue({
     },
 
     created: function () {
-      var isMobileAgent = /Mobi/i.test(navigator.userAgent); 
-      var isMobileScreen = window.screen.availWidth <= 960;
-    
-      console.log( `isMobileAgent = ${isMobileAgent}, isMobileScreen = ${isMobileScreen}` );
 
       fetch('https://illumere.com/items/key/category?q=landscape')
       .then( resp =>resp.json() )
