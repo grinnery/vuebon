@@ -69,7 +69,7 @@ Vue.component('item-view', {
 	data: function() {
 		return {
 			url: 'https://illumere.com/images/image/' + this.itm.name,
-			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=64',
+			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=48',
 			bgr: 'background-image:url(https://illumere.com/images/render/' + this.itm.name + '?h=64); background-size: cover;'
 		}
 	},
@@ -92,7 +92,7 @@ new Vue({
 
     created: function () {
       console.log('ready');
-      fetch('https://illumere.com/items/search')
+      fetch('https://illumere.com/items/key/category?q=landscape')
       .then( resp =>resp.json() )
       .then( it=> {
           this.items = it;
@@ -109,7 +109,8 @@ new Vue({
 		      continuousVertical: true,
 		      animateAnchor: false,
 		      navigation: true,
-		      navigationPosition: 'right'
+		      navigationPosition: 'right',
+		      touchSensitivity: 2
 		});    	
     }
 })
