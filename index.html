@@ -69,7 +69,7 @@ Vue.component('item-view', {
 
 	template: `
 	<div class="page">
-		<img class="piece" :src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
+		<img class="piece" src="" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
 		<div class="title">{{itm.title}}</div>
 	</div>
 	`
@@ -98,7 +98,9 @@ new Vue({
 		$('#fullpage').fullpage({
 		      css3: true,
 		      scrollingSpeed: 800,
-		      anchors: this.items.map(i=>i.name)
+		      anchors: this.items.map(i=>i.name),
+		      continuousVertical: true,
+		      animateAnchor: false
 		});    	
     }
 })
