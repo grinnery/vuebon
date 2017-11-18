@@ -227,7 +227,7 @@ new Vue({
         .then( cats => {
             this.cats = cats.filter( cat=>cat );
             //console.log(`Got ${this.cats.length} cats`);
-            if(!this.$route.params.id ) {
+            if(!this.$route.params.cat) {
                 router.replace('/' + this.cats[0]);
             }
         })
