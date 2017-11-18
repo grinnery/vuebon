@@ -137,7 +137,7 @@ Vue.component('cats-menu', {
     template: `
     <div class="cats-menu">
         <span v-for="cat in cats" :key="cat" class="menu-item">
-            <router-link class="menu-link" :to="cat"> {{cat}} </router-link>
+            <router-link class="menu-link" :to="cat">{{cat}}</router-link>
         </span>
     </div>
     `
@@ -154,45 +154,49 @@ const FP = {
         }
     },
 
-    beforeRouteUpdate (to, from, next) {
-        // react to route changes...
-        console.log(`Route Change cur ${this.my_cat} ...`);
-        this.my_cat = '';
-        next();
+    methods: {
+        updateAll: function () {
+            if (this.my_cat !== this.cat) {
+                this.my_cat = this.cat;
+                let url = baseUrl + '/items/key/category?q=' + this.cat;
+                console.log(`Fetching images for ${url}`);
+                fetch(url).then(resp => resp.json())
+                .then(it => {
+                    this.items = it;
+                    console.log(`Got ${this.items.length} items for ${this.cat}`);
+                })
+                .then(() => {
+
+                    try {
+                        $('#fullpage-' + this.cat).fullpage.destroy('all');
+                        console.log(`Fullpage full destroy`);
+                    } catch (e) {
+                    }
+
+                    $('#fullpage-' + this.cat).fullpage({
+                        css3: true,
+                        scrollingSpeed: 800,
+                        anchors: this.items.map(i => this.cat + '/' + i.name),
+                        continuousVertical: true,
+                        animateAnchor: false,
+                        navigation: true,
+                        navigationPosition: 'right',
+                        touchSensitivity: 2
+                    });
+                })
+            }
+        }
     },
 
+    mounted () {
+        console.log(`Route Mounted with ${this.cat}`);
+        this.updateAll();
+    },
+
+
     updated: function () {
-
-        if( this.my_cat !== this.cat ) {
-            this.my_cat = this.cat;
-            let url = baseUrl + '/items/key/category?q=' + this.cat;
-            console.log(`Fetching images for ${url}`);
-            fetch(url).then( resp => resp.json() )
-            .then( it => {
-                this.items = it;
-                console.log(`Got ${this.items.length} items for ${this.cat}`);
-            })
-            .then( () => {
-
-                try {
-                    $('#fullpage-'+this.cat).fullpage.destroy('all');
-                    console.log(`Fullpage full destroy`);
-                } catch(e){}
-
-                $('#fullpage-'+this.cat).fullpage({
-                    css3: true,
-                    scrollingSpeed: 800,
-                    anchors: this.items.map(i=>this.cat+'/'+i.name),
-                    continuousVertical: true,
-                    animateAnchor: false,
-                    navigation: true,
-                    navigationPosition: 'right',
-                    touchSensitivity: 2
-                });
-            })
-        }
-
-
+        console.log(`Route Updated with ${this.cat}`);
+        this.updateAll();
     },
 
     template: `
