@@ -28,6 +28,10 @@
             font-family: 'Cinzel', sans-serif;
             text-decoration: none;
         }
+        .router-link-active {
+            text-decoration: underline;
+        }
+
         .page {
 			background: #485563;  /* fallback for old browsers */
 			background: -webkit-linear-gradient(to left, #29323c, #485563);  /* Chrome 10-25, Safari 5.1-6 */
@@ -150,6 +154,13 @@ const FP = {
         }
     },
 
+    beforeRouteUpdate (to, from, next) {
+        // react to route changes...
+        console.log(`Route Change cur ${this.my_cat} ...`);
+        this.my_cat = '';
+        next();
+    },
+
     updated: function () {
 
         if( this.my_cat !== this.cat ) {
@@ -196,6 +207,7 @@ const FP = {
 const router = new VueRouter({
     routes: [
         { path: '/:cat', component: FP, props: true }
+//        { path: '*', redirect: '/landscape' }
     ]
 });
 
@@ -205,8 +217,7 @@ new Vue({
     el: '#app',
 
     data: {
-        cats: [],
-        cat: null
+        cats: []
     },
 
     created: function () {
@@ -215,8 +226,7 @@ new Vue({
         .then( cats => {
             this.cats = cats.filter( cat=>cat );
             console.log(`Got ${this.cats.length} cats`);
-            this.cat = this.cats[1];
-            console.log(`Selected ${this.cat}`);
+            router.push('/' + this.cats[0]);
         })
     }
 
