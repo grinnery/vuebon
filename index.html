@@ -132,14 +132,14 @@ Vue.component('cats-menu', {
     template: `
     <div class="cats-menu">
         <span v-for="cat in cats" :key="cat" class="menu-item">
-            <router-link class="menu-link" :to="cat">{{cat}}</router-link>
+            <router-link class="menu-link" :to="'/'+cat">{{cat}}</router-link>
         </span>
     </div>
     `
 });
 
 const FP = {
-    props: ['cat'],
+    props: ['cat', 'img'],
 
     data: function() {
         return {
@@ -161,13 +161,13 @@ const FP = {
                 })
                 .then(() => {
 
-                    try {
-                        $('#fullpage-' + this.cat).fullpage.destroy('all');
-                        //console.log(`Fullpage full destroy`);
-                    } catch (e) {
+                    let el = $('#fullpage-' + this.cat);
+
+                    if( el.fullpage && el.fullpage.destroy) {
+                        el.fullpage.destroy('all');
                     }
 
-                    $('#fullpage-' + this.cat).fullpage({
+                    el.fullpage({
                         css3: true,
                         scrollingSpeed: 800,
                         anchors: this.items.map(i => this.cat + '/' + i.name),
@@ -177,18 +177,22 @@ const FP = {
                         navigationPosition: 'right',
                         touchSensitivity: 2
                     });
+
+                    if(this.img) {
+                        el.fullpage.moveTo(this.cat + '/' + this.img);
+                    }
                 })
             }
         }
     },
 
     mounted () {
-        //console.log(`Route Mounted with ${this.cat}`);
+        console.log(`Route Mounted with ${this.cat}`);
         this.updateAll();
     },
 
     updated: function () {
-        //console.log(`Route Updated with ${this.cat}`);
+        console.log(`Route Updated with ${this.cat}`);
         this.updateAll();
     },
 
@@ -203,8 +207,11 @@ const FP = {
 
 const router = new VueRouter({
     routes: [
-        { path: '/:cat/:img', component: FP, props: true },
-        { path: '/:cat', component: FP, props: true },
+        {   path: '/:cat/:img?',
+            component: FP,
+            props: true
+        }
+
     ]
 });
 
