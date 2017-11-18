@@ -8,18 +8,38 @@
 	<link href="https://fonts.googleapis.com/css?family=Cinzel" rel="stylesheet">
 
 	<style type="text/css">
-		.page {
+        .cats-menu {
+            position:fixed;
+            height: 40px;
+            display:block;
+            width: 100%;
+            background: #333;
+            z-index:9;
+            text-align:center;
+            color: #f2f2f2;
+            padding: 10px 0 0 0;
+            top: 0px;
+        }
+        .menu-item {
+            padding: 5px;
+        }
+        .menu-link {
+            color: white;
+            font-family: 'Cinzel', sans-serif;
+            text-decoration: none;
+        }
+        .page {
 			background: #485563;  /* fallback for old browsers */
 			background: -webkit-linear-gradient(to left, #29323c, #485563);  /* Chrome 10-25, Safari 5.1-6 */
 			background: linear-gradient(to left, #29323c, #485563); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 
 			position:absolute; 
-			top:0; 
+			top:50px;
 			bottom:0; 
 			left:0; 
 			right:0; 
-			padding: 10px; 
-			padding-bottom: 40px;
+			padding: 10px;
+            padding-bottom: 40px;
 		}
 		.piece { /* THE image */
 			width:100%; 
@@ -50,39 +70,42 @@
 <body>
 
 <div id="app">
-	<div id="fullpage">
-    	<div v-for="itm in items" :key="itm.name" class="section" > 
-    		<item-view :itm="itm"> </item-view>
-    	</div>
-	</div>
+    <cats-menu :cats="cats"></cats-menu>
+    <router-view></router-view>
+    <!--<fullpage :cat="cat"></fullpage>-->
 </div>
 
 
 <script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.min.js"></script>
 
 
 <script>
 
-Vue.component('item-view', {	
-	props: ['itm'],
+var baseUrl = 'https://illumere.com';
 
-	data: function() {
+Vue.component('item-view', {
+    props: ['itm'],
+
+    data: function() {
 		return {
 			maxSize: 0,
-			url: 'https://illumere.com/images/image/' + this.itm.name,
-			thm: 'https://illumere.com/images/render/' + this.itm.name + '?h=48'
+			url: baseUrl + '/images/image/' + this.itm.name,
+			thm: baseUrl + '/images/render/' + this.itm.name + '?h=48'
 		}
 	},
 
     created: function () {
+        //console.log('View create');
     	if(screen && screen.availWidth) {
 	  		this.maxSize = Math.max(screen.availWidth, screen.availHeight);
     	}
     	if(this.maxSize > 0 && this.maxSize <= 1024) {
-    		this.url = 'https://illumere.com/images/render/' + this.itm.name + '?h=1024';
+    		this.url = baseUrl + '/images/render/' + this.itm.name + '?h=1024';
     	}
+        //console.log('View created with ' + this.url);
 	},
 
 	template: `
@@ -94,36 +117,109 @@ Vue.component('item-view', {
 });
 
 
-new Vue({
-    el: '#app',
-    data: {
-        items: [],
-        count: 0
+
+Vue.component('cats-menu', {
+    props: ['cats'],
+
+    data: function() {
+        return {
+        }
     },
 
     created: function () {
-
-      fetch('https://illumere.com/items/key/category?q=landscape')
-      .then( resp =>resp.json() )
-      .then( it=> {
-          this.items = it;
-          this.count = it.length;
-        }
-      );    
+        console.log('Menu created');
     },
 
-    updated: function() {    	
-		$('#fullpage').fullpage({
-		      css3: true,
-		      scrollingSpeed: 800,
-		      anchors: this.items.map(i=>i.name),
-		      continuousVertical: true,
-		      animateAnchor: false,
-		      navigation: true,
-		      navigationPosition: 'right',
-		      touchSensitivity: 2
-		});    	
+    template: `
+    <div class="cats-menu">
+        <span v-for="cat in cats" :key="cat" class="menu-item">
+            <router-link class="menu-link" :to="cat"> {{cat}} </router-link>
+        </span>
+    </div>
+    `
+});
+
+
+const FP = {
+    props: ['cat'],
+
+    data: function() {
+        return {
+            items: [],
+            my_cat: null
+        }
+    },
+
+    updated: function () {
+
+        if( this.my_cat !== this.cat ) {
+            this.my_cat = this.cat;
+            let url = baseUrl + '/items/key/category?q=' + this.cat;
+            console.log(`Fetching images for ${url}`);
+            fetch(url).then( resp => resp.json() )
+            .then( it => {
+                this.items = it;
+                console.log(`Got ${this.items.length} items for ${this.cat}`);
+            })
+            .then( () => {
+
+                try {
+                    $('#fullpage-'+this.cat).fullpage.destroy('all');
+                    console.log(`Fullpage full destroy`);
+                } catch(e){}
+
+                $('#fullpage-'+this.cat).fullpage({
+                    css3: true,
+                    scrollingSpeed: 800,
+                    anchors: this.items.map(i=>this.cat+'/'+i.name),
+                    continuousVertical: true,
+                    animateAnchor: false,
+                    navigation: true,
+                    navigationPosition: 'right',
+                    touchSensitivity: 2
+                });
+            })
+        }
+
+
+    },
+
+    template: `
+        <div :id="'fullpage-'+this.cat">
+            <div v-for="itm in items" :key="itm.name" class="section" >
+                <item-view :itm="itm"> </item-view>
+            </div>
+        </div>
+    `
+};
+
+const router = new VueRouter({
+    routes: [
+        { path: '/:cat', component: FP, props: true }
+    ]
+});
+
+new Vue({
+    router,
+
+    el: '#app',
+
+    data: {
+        cats: [],
+        cat: null
+    },
+
+    created: function () {
+        fetch( baseUrl + '/items/distinct?key=category')
+        .then (resp => resp.json())
+        .then( cats => {
+            this.cats = cats.filter( cat=>cat );
+            console.log(`Got ${this.cats.length} cats`);
+            this.cat = this.cats[1];
+            console.log(`Selected ${this.cat}`);
+        })
     }
+
 })
 
 
