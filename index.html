@@ -2,73 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.css" />
-	<link href="https://fonts.googleapis.com/css?family=Cinzel" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.css" />
+    <link href="https://fonts.googleapis.com/css?family=Cinzel" rel="stylesheet">
 
-	<style type="text/css">
+    <style type="text/css">
         .cats-menu {
             position:fixed;
             height: 40px;
             display:block;
             width: 100%;
-            background: #333;
             z-index:9;
             text-align:center;
             color: #f2f2f2;
             padding: 10px 0 0 0;
             top: 0px;
+            background:  #29323c;  /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #29323c, #485563, #29323c);
+            background: linear-gradient(to left, #29323c, black, #485563);
         }
         .menu-item {
             padding: 5px;
         }
         .menu-link {
-            color: white;
+            color: lightblue;
             font-family: 'Cinzel', sans-serif;
             text-decoration: none;
         }
         .router-link-active {
-            text-decoration: underline;
+            color: white;
+            font-size: 110%;
+        }
+        body {
+            background: #485563;  /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #29323c, #485563);  /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to left, #29323c, #485563); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+        .page {
+            position:absolute;
+            top:50px;
+            bottom:0;
+            left:0;
+            right:0;
+            padding: 10px;
+            padding-bottom: 40px;
+        }
+        .piece { /* THE image */
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            filter: drop-shadow(0px 0px 2px rgba(255,255,255,.5)) drop-shadow(0px 0px 10px rgba(0,0,0,.3));
+        }
+        .title {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width:100%;
+            font-size: 150%;
+            text-align:center;
+            font-family: 'Cinzel', sans-serif;
+            color:white;
+            filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
+        }
+        #fp-nav ul li a span {
+            color: white;
+            background-color: white;
+            filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
         }
 
-        .page {
-			background: #485563;  /* fallback for old browsers */
-			background: -webkit-linear-gradient(to left, #29323c, #485563);  /* Chrome 10-25, Safari 5.1-6 */
-			background: linear-gradient(to left, #29323c, #485563); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
-			position:absolute; 
-			top:50px;
-			bottom:0; 
-			left:0; 
-			right:0; 
-			padding: 10px;
-            padding-bottom: 40px;
-		}
-		.piece { /* THE image */
-			width:100%; 
-			height:100%; 
-			object-fit:contain; 
-			filter: drop-shadow(0px 0px 2px rgba(255,255,255,.5)) drop-shadow(0px 0px 10px rgba(0,0,0,.3));
-		}
-		.title { 
-			position: absolute; 
-			left: 0; 
-			bottom: 0; 
-			width:100%; 
-			font-size: 150%; 
-			text-align:center; 
-			font-family: 'Cinzel', sans-serif; 
-			color:white; 
-			filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
-		}
-		#fp-nav ul li a span {
-			color: white;
-			background-color: white;
-			filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
-		}
-
-	</style>
+    </style>
 
 </head>
 <body>
@@ -76,15 +79,12 @@
 <div id="app">
     <cats-menu :cats="cats"></cats-menu>
     <router-view></router-view>
-    <!--<fullpage :cat="cat"></fullpage>-->
 </div>
-
 
 <script src="https://unpkg.com/vue"></script>
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.min.js"></script>
-
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.5/jquery.fullpage.min.js"></script>
 
 <script>
 
@@ -94,33 +94,31 @@ Vue.component('item-view', {
     props: ['itm'],
 
     data: function() {
-		return {
-			maxSize: 0,
-			url: baseUrl + '/images/image/' + this.itm.name,
-			thm: baseUrl + '/images/render/' + this.itm.name + '?h=48'
-		}
-	},
+        return {
+            maxSize: 0,
+            url: baseUrl + '/images/image/' + this.itm.name,
+            thm: baseUrl + '/images/render/' + this.itm.name + '?h=48'
+        }
+    },
 
     created: function () {
         //console.log('View create');
-    	if(screen && screen.availWidth) {
-	  		this.maxSize = Math.max(screen.availWidth, screen.availHeight);
-    	}
-    	if(this.maxSize > 0 && this.maxSize <= 1024) {
-    		this.url = baseUrl + '/images/render/' + this.itm.name + '?h=1024';
-    	}
+        if(screen && screen.availWidth) {
+            this.maxSize = Math.max(screen.availWidth, screen.availHeight);
+        }
+        if(this.maxSize > 0 && this.maxSize <= 1024) {
+            this.url = baseUrl + '/images/render/' + this.itm.name + '?h=1024';
+        }
         //console.log('View created with ' + this.url);
-	},
+    },
 
 	template: `
-	<div class="page">
-		<img class="piece" :src="thm" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/> 
-		<div class="title">{{itm.title}}</div>
-	</div>
-	`
+    <div class="page">
+        <img class="piece" :src="thm" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/>
+        <div class="title">{{itm.title}}</div>
+    </div>
+    `
 });
-
-
 
 Vue.component('cats-menu', {
     props: ['cats'],
@@ -128,10 +126,6 @@ Vue.component('cats-menu', {
     data: function() {
         return {
         }
-    },
-
-    created: function () {
-        console.log('Menu created');
     },
 
     template: `
@@ -142,7 +136,6 @@ Vue.component('cats-menu', {
     </div>
     `
 });
-
 
 const FP = {
     props: ['cat'],
@@ -159,17 +152,17 @@ const FP = {
             if (this.my_cat !== this.cat) {
                 this.my_cat = this.cat;
                 let url = baseUrl + '/items/key/category?q=' + this.cat;
-                console.log(`Fetching images for ${url}`);
+                //console.log(`Fetching images for ${url}`);
                 fetch(url).then(resp => resp.json())
                 .then(it => {
                     this.items = it;
-                    console.log(`Got ${this.items.length} items for ${this.cat}`);
+                    //console.log(`Got ${this.items.length} items for ${this.cat}`);
                 })
                 .then(() => {
 
                     try {
                         $('#fullpage-' + this.cat).fullpage.destroy('all');
-                        console.log(`Fullpage full destroy`);
+                        //console.log(`Fullpage full destroy`);
                     } catch (e) {
                     }
 
@@ -189,20 +182,19 @@ const FP = {
     },
 
     mounted () {
-        console.log(`Route Mounted with ${this.cat}`);
+        //console.log(`Route Mounted with ${this.cat}`);
         this.updateAll();
     },
 
-
     updated: function () {
-        console.log(`Route Updated with ${this.cat}`);
+        //console.log(`Route Updated with ${this.cat}`);
         this.updateAll();
     },
 
     template: `
         <div :id="'fullpage-'+this.cat">
             <div v-for="itm in items" :key="itm.name" class="section" >
-                <item-view :itm="itm"> </item-view>
+                <item-view :itm="itm"></item-view>
             </div>
         </div>
     `
@@ -211,32 +203,25 @@ const FP = {
 const router = new VueRouter({
     routes: [
         { path: '/:cat', component: FP, props: true }
-//        { path: '*', redirect: '/landscape' }
     ]
 });
 
 new Vue({
     router,
-
     el: '#app',
-
     data: {
         cats: []
     },
-
     created: function () {
         fetch( baseUrl + '/items/distinct?key=category')
         .then (resp => resp.json())
         .then( cats => {
             this.cats = cats.filter( cat=>cat );
-            console.log(`Got ${this.cats.length} cats`);
-            router.push('/' + this.cats[0]);
+            //console.log(`Got ${this.cats.length} cats`);
+            router.replace('/' + this.cats[0]);
         })
     }
-
 })
-
-
 </script>
 
 </body>
