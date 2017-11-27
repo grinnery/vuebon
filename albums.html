@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albums from hell</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Cinzel" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+
+<div id="app">
+    <router-view></router-view>
+</div>
+
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+<script>
+
+var baseUrl = 'https://api.grin.ly';
+
+
+Vue.component('item-card', {
+    props: ['item'],
+
+    data: function() {
+        const defSize = 100;
+        return {
+            maxSize: 0,
+            thmSize: defSize,
+            url: baseUrl + '/images/image/' + this.item.name,
+            thm: baseUrl + '/images/render/' + this.item.name + '?h=' + defSize +'&w=' + defSize
+        }
+    },
+
+    template: `
+        <div class="item-card">
+            <img :class="{'item-card-thumb': true, 'item-checked': this.item.selected}" :src="thm" :width="this.thmSize" :height="this.thmSize" :alt="item.title"/>
+            <div class="item-card-body">
+                <i v-if="this.item.selected" class="icon-ok-sign item-check"></i>
+                {{this.item.title}}
+            </div>
+        </div>
+    `
+});
+
+
+Vue.component('album-card', {
+    props: ['album'],
+
+    template: `
+        <div class="album-card">
+            <router-link :to="this.album._id">
+                <i class="icon-picture"></i> {{this.album.title}}
+            </router-link>
+        </div>
+    `
+});
+
+const editAlbum = {
+    props: ['album'],
+
+    data: function() {
+        return {
+            id: '',
+            title: '',
+            desc: '',
+            items: []
+        }
+    },
+
+    created () {
+        console.log(`AlbumEdit Created for ${this.album}`);
+        if(this.album) {
+            this.fetchAlbum(this.album);
+        }
+    },
+
+    methods: {
+
+        updateAlbum: function () {
+            let meh = this.album ? 'PUT' : 'POST';
+            let aid = this.album ? '/'+this.album : '';
+            console.log(`${meh} album '${this.title}'`);
+            fetch( `${baseUrl}/albums/album${aid}?title=${this.title}&desc=${this.desc}`, {method: meh}).then(resp => resp.json())
+            .then( resp => {
+                this.$router.push(`/edit/${resp._id}`);
+            })
+        },
+
+        setData: function (al) {
+            this.id = al._id;
+            this.title = al.title;
+            this.desc = al.desc;
+            this.items = al.items;
+            console.log(`Received album '${al._id}' with ${al.items.length} items`);
+        },
+
+        fetchAlbum: function (id) {
+            console.log(`Fetching album '${id}'`);
+            fetch(`${baseUrl}/albums/album/${id}`).then(resp => resp.json())
+            .then(al => setTimeout( this.setData.bind(this, al), 3000) );
+        },
+
+        deleteAlbum: function() {
+            console.log(`DELETE album '${this.title}'`);
+            fetch( `${baseUrl}/albums/album/${this.album}`, {method: 'DELETE'})
+            .then(() => this.$router.push('/'))
+        },
+
+        itemSelChange: function (item, sel) {
+            console.log(`${item} sel='${sel}'`);
+            let meh = sel ? 'PUT' : 'DELETE';
+            fetch( `${baseUrl}/albums/items/${this.album}?items=${item}`, {method: meh})
+            .then(resp => resp.json())
+            .then(resp => this.setData(resp));
+        },
+    },
+
+    template: `
+        <div>
+            <input v-model="title" placeholder="Title">
+            <input v-model="desc" placeholder="Description">
+            <p>Items: {{items.length}}</p>
+          <div v-if="album">
+              <button v-on:click="updateAlbum">Update</button>
+              <button v-on:click="deleteAlbum">Delete</button>
+              <h4>Click on image to add or remove</h4>
+          </div>
+          <div v-else>
+            <button v-on:click="updateAlbum">Create</button>
+          </div>
+          <image-selector :presel="items" @itemSelChange="itemSelChange"></image-selector>
+        </div>
+    `,
+};
+
+
+const allAlbums = {
+
+    data: function() {
+        return {
+            albums: [],
+        }
+    },
+
+    methods: {
+
+        fetchAlbums: function () {
+            fetch( baseUrl + '/albums').then(resp => resp.json())
+            .then( albums => {
+                console.log(`Got ${albums.length} albums`);
+                this.albums = albums;
+            })
+        }
+
+    },
+
+    created () {
+        console.log(`allAlbums created`);
+        this.fetchAlbums();
+    },
+
+    template: `
+        <div class="allAlbums">
+            <div v-for="album in albums" :key="album._id">
+                <album-card :album="album"></album-card>
+            </div>
+
+            <router-link to="/edit">Create a new album</router-link>
+         </div>
+    `
+};
+
+
+const viewAlbum = {
+    props: ['album'],
+
+    data: function() {
+        return {
+            title: '',
+            items: [],
+            my_id: null
+        }
+    },
+
+    methods: {
+
+        fetchItems: function () {
+            if (this.my_id !== this.album) {
+                this.my_id = this.album;
+                let url = baseUrl + '/albums/album/' + this.album;
+                //console.log(`Fetching images for ${url}`);
+                fetch(url).then(resp => resp.json())
+                .then(it => {
+                    this.title = it.title;
+                    this.items = it.items;
+                    console.log(`Got ${this.items.length} items from ${this.album}`);
+                });
+            }
+        }
+
+    },
+
+    created () {
+        console.log(`AlbumView Created with ${this.album}`);
+        this.fetchItems();
+    },
+
+    template: `
+        <div :id="this.album">
+            <h1>{{title}}</h1>
+            <div class="card-holder">
+                <item-card v-for="item in items" :key="item.name" :item="{ name: item }"></item-card>
+            </div>
+            <router-link :to="'/edit/'+this.album"><i class="icon-cog"></i> Properties</router-link>
+        </div>
+    `
+};
+
+
+const viewAll = {
+    props: ['presel'],
+    watch: {
+      'presel': function (newVal, oldVal) {
+          console.log('Presel change');
+          this.setInitialSel()
+      }
+    },
+
+    data: function() {
+        return {
+            items: []
+        }
+    },
+
+    methods: {
+
+        isPreSel: function (name) {
+            let pre = this.presel || [];
+            return pre.findIndex( item => item === name ) >= 0;
+        },
+
+        setInitialSel: function () {
+            for( let idx = 0; idx < this.items.length; idx ++) {
+                this.$set(this.items[idx], 'selected', this.isPreSel(this.items[idx].name));
+            }
+        },
+
+        fetchItems: function () {
+            let url = baseUrl + '/items/search';
+            //console.log(`Fetching images for ${url}`);
+            fetch(url).then(resp => resp.json())
+            .then(it => {
+                // filter unused? Need to add a new property for selection tracking
+                this.items = it.map( el => { el.selected = this.isPreSel(el.name); return el; });
+            });
+        },
+
+        toggleItemSel: function(idx) {
+            let sel = !this.items[idx].selected;
+            this.$set(this.items[idx], 'selected', sel);
+            this.$emit('itemSelChange', this.items[idx].name, sel);
+        }
+    },
+
+    created () {
+        console.log(`ViewAll Created with ${this.items.length} images, ${this.presel.length} pre-selected`);
+        this.fetchItems();
+    },
+
+    updated () {
+        console.log(`ViewAll Updated with ${this.items.length} images, ${this.presel.length} pre-selected`);
+        // this.setInitialSel();
+    },
+
+    template: `
+        <div class="card-holder">
+            <item-card v-for="(item, idx) in items"
+                :key="item.name"
+                :item="item"
+                @click.native="toggleItemSel(idx)">
+            </item-card>
+        </div>
+    `
+};
+
+Vue.component('image-selector', viewAll);
+
+
+const router = new VueRouter({
+    routes: [
+        {   path: '/',
+            component: allAlbums
+        },
+        {   path: '/all/:album?',
+            component: viewAll,
+            props: true
+        },
+        {   path: '/edit/:album?',
+            component: editAlbum,
+            props: true
+        },
+        {   path: '/:album',
+            component: viewAlbum,
+            props: true
+        },
+    ]
+});
+
+new Vue({
+    router,
+    el: '#app',
+    data: {
+    },
+    created: function () {
+    }
+})
+</script>
+
+</body>
+</html>

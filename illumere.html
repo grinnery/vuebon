@@ -17,7 +17,6 @@
     <router-view></router-view>
 </div>
 
-
 <script src="https://unpkg.com/vue"></script>
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -25,7 +24,7 @@
 
 <script>
 
-var baseUrl = 'https://api.grin.ly';
+var baseUrl = 'https://illumere.com';
 
 Vue.component('item-view', {
     props: ['itm'],
@@ -33,7 +32,7 @@ Vue.component('item-view', {
     data: function() {
         return {
             maxSize: 0,
-            url: baseUrl + '/images/render/' + this.itm.name + '?h=1600',
+            url: baseUrl + '/images/image/' + this.itm.name,
             thm: baseUrl + '/images/render/' + this.itm.name + '?h=48'
         }
     },
@@ -44,7 +43,7 @@ Vue.component('item-view', {
             this.maxSize = Math.max(screen.availWidth, screen.availHeight);
         }
         if(this.maxSize > 0 && this.maxSize <= 1024) {
-            this.url = baseUrl + '/images/render/' + this.itm.name + '?h=900';
+            this.url = baseUrl + '/images/render/' + this.itm.name + '?h=1024';
         }
         //console.log('View created with ' + this.url);
     },
