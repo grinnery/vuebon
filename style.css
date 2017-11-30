@@ -4,7 +4,7 @@ body {
     background: linear-gradient(to left, #29323c, #485563); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
-.cats-menu {
+.groups-menu {
     position:fixed;
     height: 40px;
     display:block;
@@ -27,6 +27,13 @@ body {
     color: lightblue;
     font-family: 'Cinzel', sans-serif;
     text-decoration: none;
+}
+
+.menu-button {
+    color: green;
+    font-family: 'Cinzel', sans-serif;
+    text-decoration: none;
+    padding: 2px;
 }
 
 .router-link-active {
@@ -58,11 +65,40 @@ body {
     bottom: 0;
     width:100%;
     font-size: 150%;
-    text-align:center;
+    text-align: center;
     font-family: 'Cinzel', sans-serif;
     color:white;
     filter: drop-shadow(0px 0px 2px rgba(0,0,0,.8)) drop-shadow(0px 0px 10px rgba(255,255,255,.3));
 }
+
+.album-edit {
+    margin-top: 60px;
+    /*width: 100%;*/
+}
+
+.album-table {
+    width: 100%;
+}
+
+.edit {
+    display: inline-block;
+    margin: 5px 5px;
+    background:  #485563;
+    border: 1px solid gray;
+    color: white;
+    /*text-align: center;*/
+    min-width: 90%;
+}
+
+.edit-title {
+    font-size: 120%;
+}
+
+.edit-desc {
+    font-size: 100%;
+    /*width: 80%;*/
+}
+
 
 #fp-nav ul li a span {
     color: white;

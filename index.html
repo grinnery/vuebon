@@ -13,8 +13,6 @@
 <body>
 
 <div id="app">
-    <cats-menu :cats="cats"></cats-menu>
-    <router-view></router-view>
 </div>
 
 
@@ -23,18 +21,21 @@
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.9.4/jquery.fullpage.min.js"></script>
 
+<script type="text/javascript" src="backend.js"></script>
+
 <script>
 
-var baseUrl = 'https://api.grin.ly';
+let baseUrl = hosts[0];
+let api = getters.byAlbum;
 
 Vue.component('item-view', {
-    props: ['itm'],
+    props: ['item'],
 
     data: function() {
         return {
             maxSize: 0,
-            url: baseUrl + '/images/render/' + this.itm.name + '?h=1600',
-            thm: baseUrl + '/images/render/' + this.itm.name + '?h=48'
+            url: baseUrl + '/images/render/' + this.item.name + '?h=1600',
+            thm: baseUrl + '/images/render/' + this.item.name + '?h=48'
         }
     },
 
@@ -44,59 +45,56 @@ Vue.component('item-view', {
             this.maxSize = Math.max(screen.availWidth, screen.availHeight);
         }
         if(this.maxSize > 0 && this.maxSize <= 1024) {
-            this.url = baseUrl + '/images/render/' + this.itm.name + '?h=900';
+            this.url = baseUrl + '/images/render/' + this.item.name + '?h=900';
         }
         //console.log('View created with ' + this.url);
     },
 
-	template: `
+    template: `
         <div class="page">
-            <img class="piece" :src="thm" :data-src="url" :width="itm.width" :height="itm.height" :alt="itm.title"/>
-            <div class="title">{{itm.title}}</div>
+            <img class="piece" :src="thm" :data-src="url" :width="item.width" :height="item.height" :alt="item.title"/>
+            <div class="title">{{item.title}}</div>
         </div>
     `
 });
 
-Vue.component('cats-menu', {
-    props: ['cats'],
 
-    data: function() {
-        return { }
-    },
+Vue.component('groups-menu', {
+    props: ['groups'],
+
 
     template: `
-    <div class="cats-menu">
-        <span v-for="cat in cats" :key="cat" class="menu-item">
-            <router-link class="menu-link" :to="'/'+cat">{{cat}}</router-link>
+    <div class="groups-menu">
+        <span v-for="grp in groups" :key="grp._id" class="menu-item">
+            <router-link class="menu-link" :to="'/'+grp._id">{{grp.title}}</router-link>
         </span>
     </div>
     `
 });
 
-const FP = {
-    props: ['cat', 'img'],
+const fullPage = {
+    props: ['groupkey', 'item'],
 
     data: function() {
         return {
             items: [],
-            my_cat: null
+            my_key: null
         }
     },
 
     methods: {
         updateAll: function () {
-            if (this.my_cat !== this.cat) {
-                this.my_cat = this.cat;
-                let url = baseUrl + '/items/key/category?q=' + this.cat;
-                //console.log(`Fetching images for ${url}`);
-                fetch(url).then(resp => resp.json())
+            if (this.my_key !== this.groupkey) {
+                this.my_key = this.groupkey;
+
+                api.getItems(baseUrl, this.groupkey)
                 .then(it => {
                     this.items = it;
-                    //console.log(`Got ${this.items.length} items for ${this.cat}`);
+                    //console.log(`Got ${this.items.length} items for ${this.group}`);
                 })
                 .then(() => {
 
-                    let el = $('#fullpage-' + this.cat);
+                    let el = $('#fullpage-' + this.groupkey);
 
                     if( el.fullpage && el.fullpage.destroy) {
                         el.fullpage.destroy('all');
@@ -105,7 +103,7 @@ const FP = {
                     el.fullpage({
                         css3: true,
                         scrollingSpeed: 800,
-                        anchors: this.items.map(i => this.cat + '/' + i.name),
+                        anchors: this.items.map(i => this.groupkey + '/' + i.name),
                         continuousVertical: true,
                         animateAnchor: false,
                         navigation: true,
@@ -113,15 +111,11 @@ const FP = {
                         touchSensitivity: 2,
                         onLeave: function (idx, nextIdx, dir) {
                             console.log(`onLeave: ${idx}, ${nextIdx}, ${dir}`);
-                        },
-                        onSlideLeave: function (link, idx, nextIdx, dir, nextSlide) {
-                            console.log(`onSlideLeave: ${link}, ${idx}, ${nextIdx}, ${dir}, ${nextSlide}`);
                         }
-
                     });
 
-                    if(this.img) {
-                        el.fullpage.moveTo(this.cat + '/' + this.img);
+                    if(this.item) {
+                        el.fullpage.moveTo(this.groupkey + '/' + this.item);
                     }
                 })
             }
@@ -129,19 +123,19 @@ const FP = {
     },
 
     mounted () {
-        console.log(`Route Mounted with ${this.cat}`);
+        console.log(`Route Mounted with ${this.groupkey}`);
         this.updateAll();
     },
 
     updated: function () {
-        console.log(`Route Updated with ${this.cat}`);
+        console.log(`Route Updated with ${this.groupkey}`);
         this.updateAll();
     },
 
     template: `
-        <div :id="'fullpage-'+this.cat">
+        <div :id="'fullpage-'+this.groupkey">
             <div v-for="itm in items" :key="itm.name" class="section" >
-                <item-view :itm="itm"></item-view>
+                <item-view :item="itm"></item-view>
             </div>
         </div>
     `
@@ -149,11 +143,10 @@ const FP = {
 
 const router = new VueRouter({
     routes: [
-        {   path: '/:cat/:img?',
-            component: FP,
+        {   path: '/:groupkey/:item?',
+            component: fullPage,
             props: true
         }
-
     ]
 });
 
@@ -161,20 +154,25 @@ new Vue({
     router,
     el: '#app',
     data: {
-        cats: []
+        groups: []
     },
     created: function () {
-        fetch( baseUrl + '/items/distinct?key=category')
-        .then (resp => resp.json())
-        .then( cats => {
-            this.cats = cats.filter( cat=>cat );
-            //console.log(`Got ${this.cats.length} cats`);
-            if( ! this.$route.params.cat ) {
-                // console.log(`Initial route path: ${this.$route.path}, category ${this.$route.params.cat}`);
-                router.replace('/' + this.cats[0]);
+        api.getGroups(baseUrl).then( groups => {
+            this.groups = groups;
+            console.log(`Got ${this.groups.length} groups`);
+            console.log(`Initial route path: ${this.$route.path}, group ${this.$route.params.group}`);
+            if( !this.$route.params.group ) {
+                router.replace('/' + this.groups[0]._id);
             }
         })
-    }
+    },
+
+    template: `
+        <div>
+            <groups-menu :groups="groups"></groups-menu>
+            <router-view :groups="groups"></router-view>
+        </div>
+    `
 })
 </script>
 
